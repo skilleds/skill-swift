@@ -31,34 +31,53 @@ for f in "${arquivos[@]}"; do
   # sem comentário de linha e sem string: as regras olham CÓDIGO. (Ordem: string primeiro.)
   codigo="$(sed -e 's/"[^"]*"/""/g' -e 's|//.*$||' "$f")"
   ehTeste=0
-  case "$nome" in *Test*) ehTeste=1 ;; esac   # cobre Tests/, *Tests.swift e *Test.swift
+  case "$nome" in */*Tests/*|*Tests/*|*Tests.swift|*Test.swift) ehTeste=1 ;; esac   # Tests/, *Tests.swift, *Test.swift
 
-  # 1. force-unwrap e amigos — o crash que você escolheu adiar
+  # 1. force-unwrap, print e amigos — o crash que você escolheu adiar. Waiver POR LINHA:
+  #    `// swift-ok: motivo` na própria linha (nunca vale para o arquivo inteiro).
   if [ "$ehTeste" = 0 ]; then
-    grep -qE '\btry!' <<< "$codigo" && erros+=("$nome: \`try!\` — VETADO em produção (piso.md secao 1)")
-    grep -qE '\bas!' <<< "$codigo"  && erros+=("$nome: \`as!\` — cast forçado: crash na mão do usuário quando o tipo mudar")
-    # `[]A-Za-z_)]` com o `]` PRIMEIRO: dentro de classe POSIX a barra invertida é LITERAL, e
-    # `[A-Za-z_)\]]` exigia um `]` logo depois — a regra nunca casava (gate cego parece verde).
-    grep -qE '[]A-Za-z_)]![]. ),;]|[]A-Za-z_)]!$' <<< "$codigo" \
-      && ! grep -qE '#\s*swift-ok:' "$f" \
-      && avisos+=("$nome: possível force-unwrap (\`!\`) — cada um é um fatalError adiado; use guard let / ?? / throws")
+    n=0
+    while IFS= read -r linha || [ -n "$linha" ]; do
+      n=$((n+1))
+      grep -qE '//[[:space:]]*swift-ok:[[:space:]]*[^[:space:]]' <<< "$linha" && continue
+      l="$(sed -e 's/"[^"]*"/""/g' -e 's|//.*$||' <<< "$linha")"
+      grep -qE '\btry!' <<< "$l" && erros+=("$nome:$n: \`try!\` — VETADO em produção (piso.md secao 1)")
+      grep -qE '\bas!' <<< "$l"  && erros+=("$nome:$n: \`as!\` — cast forçado: crash na mão do usuário quando o tipo mudar")
+      # declaração `var x: Tipo!` (IBOutlet/IUO no ciclo de vida da view) é o caso permitido pelo piso
+      if ! grep -qE '(var|let)[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*:[^=]*[A-Za-z_>)]![[:space:]]*(=.*)?$' <<< "$l"; then
+        # `[]A-Za-z_)]` com o `]` PRIMEIRO: dentro de classe POSIX a barra invertida é LITERAL.
+        grep -qE '[]A-Za-z_)]![]. ),;]|[]A-Za-z_)]!$' <<< "$l" \
+          && erros+=("$nome:$n: force-unwrap (\`!\`) — VETADO em produção; use guard let / ?? / throws, ou \`// swift-ok: motivo\` na linha")
+      fi
+      grep -qE '(^|[^.A-Za-z0-9_])print\(' <<< "$l" \
+        && erros+=("$nome:$n: \`print(\` em produção — use os.Logger com privacidade (piso.md secao 6)")
+      grep -qE '\bfatalError\(' <<< "$l" \
+        && avisos+=("$nome:$n: \`fatalError\` — só em invariante de programação, nunca em erro de I/O, rede ou dado do usuário (\`// swift-ok: motivo\` na linha)")
+    done < "$f"
   fi
 
   # 2. erro engolido
   grep -qE 'catch\s*\{\s*\}' <<< "$codigo" && erros+=("$nome: \`catch { }\` vazio — erro engolido (piso comum: erro nunca é engolido)")
-  grep -qE 'catch\s*\{\s*print\(' <<< "$codigo" && avisos+=("$nome: \`catch { print(...) }\` — print não é tratamento nem log estruturado")
 
   # 3. concorrência
   grep -qE 'DispatchSemaphore' <<< "$codigo" \
     && erros+=("$nome: \`DispatchSemaphore\` — esperar async com semáforo é deadlock na main thread esperando acontecer (piso.md secao 2)")
-  grep -qE '@unchecked Sendable' <<< "$codigo" \
-    && ! grep -qE '@unchecked Sendable.*//|//.*@unchecked' "$f" \
-    && avisos+=("$nome: \`@unchecked Sendable\` sem comentário explicando a invariante que o compilador não vê")
+  # `@unchecked Sendable` exige a invariante em comentário NA MESMA LINHA ou na linha anterior
+  # (um comentário qualquer em outro ponto do arquivo não vale).
+  ant=""; n=0
+  while IFS= read -r linha || [ -n "$linha" ]; do
+    n=$((n+1))
+    if grep -qE '@unchecked[[:space:]]+Sendable' <<< "${linha%%//*}" \
+       && ! grep -qE '//[[:space:]]*[^[:space:]]' <<< "$linha" \
+       && ! grep -qE '^[[:space:]]*//[[:space:]]*[^[:space:]]' <<< "$ant"; then
+      avisos+=("$nome:$n: \`@unchecked Sendable\` sem comentário explicando a invariante que o compilador não vê")
+    fi
+    ant="$linha"
+  done < "$f"
 
   # 4. memória
   grep -qE '\bunowned\b' <<< "$codigo" \
     && avisos+=("$nome: \`unowned\` — só quando o dono é garantidamente mais longevo; se não for, é crash, não nil")
-  grep -qE 'weak var .*delegate' <<< "$codigo" || true
 
   # 5. segurança do cliente
   grep -qE 'UserDefaults\.standard\.set\([^)]*(token|senha|password|secret|apiKey)' <<< "$codigo" \

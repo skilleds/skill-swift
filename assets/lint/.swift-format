@@ -9,6 +9,6 @@
     "NeverUseForceTry": true,
     "NeverUseImplicitlyUnwrappedOptionals": true,
     "AlwaysUseLowerCamelCase": true,
-    "AllPublicDeclarationsHaveDocumentation": false
+    "AllPublicDeclarationsHaveDocumentation": true
   }
 }

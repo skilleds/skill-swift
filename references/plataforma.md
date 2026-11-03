@@ -19,7 +19,8 @@
 
 ## 2. Build no CI, não na máquina de alguém
 
-- **MUST:** build e teste no CI a cada PR (`xcodebuild test` / `swift test`), com o **simulador
+- **MUST:** build e teste (`xcodebuild test` / `swift test`) no gate LOCAL a cada commit; o CI remoto
+  (macOS é caro) roda só antes de promover a hml, em release/tag ou sob demanda (piso 27), com o **simulador
   fixado** (nome e versão) — simulador flutuante é flaky garantido.
 - **Assinatura em cofre**, nunca no repo: certificado e provisioning profile entram por variável
   segura no runner (piso da `schematize-mobile → references/entrega-lojas.md`; dependência: instale a `schematize-mobile`).
@@ -48,6 +49,11 @@
 - **Objective-C**: fronteira explícita (`@objc` só onde precisa), e o que vem de lá é **opcional
   implícito mentiroso** — trate como `Optional` de verdade na borda.
 - **C/C++ via módulo**: o Swift **não protege o que acontece dentro do C** — do outro lado da
-  fronteira valem as regras de segurança de memória de quem escreveu aquele código (e, quando a casa
-  publicar a skill de C/C++, é ela que manda ali). Trate o retorno como não confiável: ponteiro,
+  fronteira valem as regras de segurança de memória de quem escreveu aquele código (e a `schematize-c` / `schematize-cpp`
+  mandam ali). Trate o retorno como não confiável: ponteiro,
   tamanho e tempo de vida são contrato que o compilador do Swift não verifica.
+
+## 6. Plataforma Apple: o que o gate textual não vê
+
+- **`PrivacyInfo.xcprivacy`** declarado no app e em cada SDK de terceiros; APIs "required reason" (`UserDefaults`, timestamps de arquivo, etc.) só com motivo declarado. Detalhe de loja: `schematize-mobile` -> `references/entrega-lojas.md`.
+- **Supply chain do SwiftPM:** dependência fixada por versão exata ou revisão (`Package.resolved` commitado); plugins de build do SwiftPM **executam código** na sua máquina — revise antes de aceitar.

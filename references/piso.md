@@ -16,6 +16,7 @@ Convenção: **MUST** = o gate cobra · **VETADO** = piso.
   escolheu adiar — e no app instalado ele é **crash na mão do usuário**, não exceção capturável.
 - **MUST:** `guard let`/`if let`, `??` com default explícito, ou propagação com `throws`. Onde a
   invariante é real, **`precondition` com mensagem** diz o que quebrou; `!` não diz nada.
+- **Waiver rastreável, por linha:** `// swift-ok: motivo` na MESMA linha libera aquele `!`/`print(`/`fatalError(` (o gate trata `!`, `try!`, `as!` e `print(` como ERRO; `fatalError` como aviso). Vale só para a linha; nunca para o arquivo. Teste (`*Tests/*`, `*Tests.swift`, `*Test.swift`) é isento.
 - **`try?` engole o erro** — só onde a falha é aceitável **e** está comentada. `try!` é VETADO.
 - **Optional chaining silencioso é bug esperando:** `objeto?.metodo()` que "não fez nada" porque o
   objeto era `nil` é o defeito mais difícil de achar, porque não deixa rastro. Onde importa, teste
@@ -72,7 +73,7 @@ Convenção: **MUST** = o gate cobra · **VETADO** = piso.
 
 - **Nunca segredo no bundle** — `Info.plist`, constante, string ofuscada: tudo é legível com
   `strings` no `.ipa`. Piso da `schematize-mobile`.
-- **Keychain para credencial**, nunca `UserDefaults` (que é um plist em claro).
+- **Keychain para credencial**, nunca `UserDefaults` (que é um plist em claro). Defina `kSecAttrAccessible` explícito (`...AfterFirstUnlockThisDeviceOnly` para token de sessão em background; `...WhenUnlockedThisDeviceOnly` no resto).
 - **`URLSession` com timeout explícito**; validação de certificado **nunca** relaxada
   (`NSAllowsArbitraryLoads` é VETADO fora de teste local documentado).
 - **Log sem PII** e sem token; `print` não vai para produção (`os.Logger` com privacidade

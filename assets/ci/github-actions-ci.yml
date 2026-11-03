@@ -1,7 +1,17 @@
 # CI de Swift (schematize-swift). Copie para .github/workflows/ci.yml.
+# O gate por commit é LOCAL: `bash scripts/check-swift.sh` (+ swift-format/swift test na máquina dev).
+# Este CI remoto roda só antes de promover a hml (tag hml-*), em release (tag v*) ou sob demanda
+# (workflow_dispatch) — NUNCA em PR nem em push de branch (piso 27; minuto de macOS é o mais caro).
 # Config do formatador: assets/lint/.swift-format (raiz do repo). Fixe a versao do Xcode.
 name: ci
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  push:
+    tags: ["hml-*", "v*"]
+    paths-ignore: ["**/*.md", "docs/**"]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

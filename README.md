@@ -27,7 +27,7 @@ bash /tmp/skill-swift/install.sh .
 - **references/** — `piso` (opcional, concorrência, ARC, erro, segurança, teste), `plataforma`
   (SwiftPM, CI, assinatura, `@available`, interop), `stack-versoes` (anexo volátil, datado).
 - **scripts/** — `check-swift.sh` (gate textual, honesto sobre o alcance) e `check-swift.test.sh`
-  (9 casos, 7 vermelhos).
+  (20 casos).
 - **assets/commands/** — `/swift-help`, `/swift-load`, `/swift-review`, `/swift-claude`,
   `/swift-cc`, `/swift-handoff`.
 - **assets/CLAUDE.md** — regra sempre-on.
@@ -44,7 +44,7 @@ bash /tmp/skill-swift/install.sh .
 
 ## Versão
 
-**v0.1.0** — changelog em `CHANGELOG.md`.
+**v0.4.0** — changelog em `CHANGELOG.md`.
 
 ## Regra de ouro
 

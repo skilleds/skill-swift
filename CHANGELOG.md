@@ -3,6 +3,21 @@
 Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+- CI de referência (P0-1): `on: [push, pull_request]` em macOS virou `workflow_dispatch` + `push: tags ["hml-*","v*"]`, com `concurrency` (`cancel-in-progress`) e `paths-ignore`; cabeçalho diz que o gate por commit é LOCAL (`scripts/check-swift.sh`). `plataforma.md` §2 deixa de mandar "CI a cada PR".
+- Gate (P1-3): waiver `// swift-ok: motivo` agora é POR LINHA (antes testava `#`, que nunca casava, e valia pelo arquivo); force-unwrap `!` em produção virou ERRO (declaração `var x: Tipo!` segue permitida).
+- Gate (P1-4): arquivo de teste só por `*Tests/*|*Tests.swift|*Test.swift` (antes `*Test*` desligava as regras em `TestFlight/…`).
+- Gate (P1-5/P2-6): cobre `print(` (erro) e `fatalError(` (aviso); `@unchecked Sendable` exige comentário na mesma linha/anterior; removida linha no-op de `weak var delegate`.
+- Textos (P1-5): Keychain `kSecAttrAccessible`, PrivacyInfo e supply chain do SwiftPM em `piso.md`/`plataforma.md`.
+- P1-1/P1-2: bloco curto "Herda os pisos 22–29" em SKILL.md e assets/CLAUDE.md (sync-herdados fica para o orquestrador).
+- P2: README v0.4.0, contagem de casos (20), `.swift-format` com `AllPublicDeclarationsHaveDocumentation: true`, referência a `schematize-c`/`schematize-cpp`.
+- Testes: `check-swift.test.sh` de 10 para 20 casos (vermelho antes: 6 falhas).
+
+### Pendente `[~]`
+- P1-5: SwiftData/Observation, entitlements/ATS e `PrivacyInfo` por required-reason API em detalhe — exigem texto de política/fonte oficial; não inventado.
+
 ## [0.4.0] — 2026-10-14
 Description reduzida para o orçamento de listagem do catálogo; sem mudança de piso.
 

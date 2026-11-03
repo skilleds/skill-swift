@@ -10,7 +10,7 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT INT TERM
 ok=0; fail=0
 caso() {
   local nome="$1" esp="$2" agulha="$3" arq="${4:-Alvo.swift}"
-  local d="$TMP/$nome"; mkdir -p "$d"; cat > "$d/$arq"
+  local d="$TMP/$nome"; mkdir -p "$d/$(dirname "$arq")"; cat > "$d/$arq"
   local saida; saida="$(bash "$G" "$d" 2>&1)"; local rc=$?
   if [ "$rc" != "$esp" ]; then echo "  ✖ $nome: exit $rc, esperado $esp"; sed 's/^/      /' <<<"$saida"; fail=$((fail+1)); return; fi
   if [ -n "$agulha" ] && ! grep -qF -- "$agulha" <<<"$saida"; then echo "  ✖ $nome: exit certo, saída sem \"$agulha\""; sed 's/^/      /' <<<"$saida"; fail=$((fail+1)); return; fi
@@ -55,7 +55,7 @@ func converter(_ qualquer: Any) -> String {
 }
 FIX
 
-caso force-unwrap 0 "possível force-unwrap" <<'FIX'
+caso force-unwrap 1 "force-unwrap" <<'FIX'
 import Foundation
 func primeiro(_ itens: [String]) -> String {
     return itens.first!
@@ -102,6 +102,60 @@ final class PedidoTests: XCTestCase {
         XCTAssertNotNil(url)
     }
 }
+FIX
+
+echo "== waiver por linha, teste por caminho, print, fatalError =="
+caso waiver-na-linha 0 "" <<'FIX'
+import Foundation
+func primeiro(_ itens: [String]) -> String {
+    return itens.first! // swift-ok: lista validada na entrada, nunca vazia
+}
+FIX
+caso waiver-nao-vale-pro-arquivo 1 "force-unwrap" <<'FIX'
+import Foundation
+func a(_ i: [String]) -> String { return i.first! // swift-ok: invariante
+}
+func b(_ i: [String]) -> String { return i.last! }
+FIX
+caso iuo-de-outlet 0 "" <<'FIX'
+import UIKit
+final class Tela: UIViewController {
+    @IBOutlet var titulo: UILabel!
+}
+FIX
+caso nome-com-Test-nao-e-teste 1 "VETADO em produção" "TestFlightUploader.swift" <<'FIX'
+import Foundation
+func carregar(_ url: URL) -> Data { return try! Data(contentsOf: url) }
+FIX
+caso diretorio-TestFlight-nao-e-teste 1 "cast forçado" "TestFlight/Feed.swift" <<'FIX'
+import Foundation
+func f(_ x: Any) -> String { return x as! String }
+FIX
+caso print-em-producao 1 "print" <<'FIX'
+import Foundation
+func logar(_ m: String) { print(m) }
+FIX
+caso print-em-teste 0 "" "LogTests.swift" <<'FIX'
+import XCTest
+final class LogTests: XCTestCase { func testA() { print("ok") } }
+FIX
+caso fatalError-avisa 0 "fatalError" <<'FIX'
+import Foundation
+func ler(_ url: URL) -> Data {
+    do { return try Data(contentsOf: url) } catch { fatalError("falhou") }
+}
+FIX
+caso unchecked-comentario-longe 0 "@unchecked Sendable" <<'FIX'
+// nota sobre @unchecked lá no topo, longe do uso
+import Foundation
+
+final class Cache {}
+final class Caixa: @unchecked Sendable { var v = 0 }
+FIX
+caso unchecked-comentado 0 "" <<'FIX'
+import Foundation
+// protegido por lock interno
+final class Caixa: @unchecked Sendable { var v = 0 }
 FIX
 
 echo "== nada para verificar =="
