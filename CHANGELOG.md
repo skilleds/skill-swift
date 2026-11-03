@@ -3,7 +3,7 @@
 Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.5.0] — 2026-11-03
 
 ### Corrigido
 - CI de referência (P0-1): `on: [push, pull_request]` em macOS virou `workflow_dispatch` + `push: tags ["hml-*","v*"]`, com `concurrency` (`cancel-in-progress`) e `paths-ignore`; cabeçalho diz que o gate por commit é LOCAL (`scripts/check-swift.sh`). `plataforma.md` §2 deixa de mandar "CI a cada PR".
