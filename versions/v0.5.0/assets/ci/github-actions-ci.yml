@@ -1,0 +1,27 @@
+# CI de Swift (schematize-swift). Copie para .github/workflows/ci.yml.
+# O gate por commit é LOCAL: `bash scripts/check-swift.sh` (+ swift-format/swift test na máquina dev).
+# Este CI remoto roda só antes de promover a hml (tag hml-*), em release (tag v*) ou sob demanda
+# (workflow_dispatch) — NUNCA em PR nem em push de branch (piso 27; minuto de macOS é o mais caro).
+# Config do formatador: assets/lint/.swift-format (raiz do repo). Fixe a versao do Xcode.
+name: ci
+on:
+  workflow_dispatch:
+  push:
+    tags: ["hml-*", "v*"]
+    paths-ignore: ["**/*.md", "docs/**"]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  swift:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Xcode fixado (ajuste a versao exigida pela App Store)
+        run: sudo xcode-select -s /Applications/Xcode_26.0.app
+      - name: Lint (swift-format)
+        run: swift format lint --strict --recursive Sources Tests
+      - name: Build + testes (strict concurrency)
+        run: swift test -Xswiftc -strict-concurrency=complete

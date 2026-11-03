@@ -1,7 +1,7 @@
 ---
 name: schematize-swift
 metadata:
-  version: 0.4.0
+  version: 0.5.0
 description: >-
   Piso de Swift para Apple. Use ao tocar Package.swift, *.swift ou *.xcodeproj: sem force-unwrap, concorrência estrita, ciclos de retenção, Keychain. IAM e lojas: mobile.
 ---
@@ -14,7 +14,7 @@ piso de **app** (offline-first, IAM mobile, push, lojas, testes no device) é da
 **`schematize-mobile`** — e, no que é de app, **ela manda**. Aqui fica o que é da linguagem e da
 toolchain.
 
-**Versão:** skill `schematize-swift` v0.4.0. Changelog em `CHANGELOG.md`.
+**Versão:** skill `schematize-swift` v0.5.0. Changelog em `CHANGELOG.md`.
 
 ## Precedência e herança (leia antes de divergir)
 

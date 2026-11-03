@@ -3,7 +3,7 @@ name = "schematize-swift"
 tag = "Linguagem · Swift"
 status = "beta"
 order = 28
-current_version = "0.4.0"
+current_version = "0.5.0"
 href = "/swift"
 
 [descriptions]

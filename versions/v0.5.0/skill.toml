@@ -1,0 +1,12 @@
+slug = "swift"
+name = "schematize-swift"
+tag = "Linguagem · Swift"
+status = "beta"
+order = 28
+current_version = "0.5.0"
+href = "/swift"
+
+[descriptions]
+pt = "O piso de Swift da casa (cliente Apple): force-unwrap é fatalError adiado, concorrência estruturada com strict concurrency do Swift 6, ARC e ciclo de retenção, erro tipado, Keychain e segredo fora do bundle, SwiftPM com lockfile — com a fronteira clara: no que é de app, a schematize-mobile manda."
+en = "The house's Swift floor (Apple client): force-unwrap is a deferred fatalError, structured concurrency with Swift 6 strict mode, ARC and retain cycles, typed errors, Keychain and no secrets in the bundle, SwiftPM with a lockfile — with a clear boundary: for app-level concerns, schematize-mobile rules."
+es = "El piso de Swift de la casa (cliente Apple): el force-unwrap es un fatalError aplazado, concurrencia estructurada con el modo estricto de Swift 6, ARC y ciclos de retención, errores tipados, Keychain y nada de secretos en el bundle, SwiftPM con lockfile — con la frontera clara: en lo que es de app, manda schematize-mobile."
